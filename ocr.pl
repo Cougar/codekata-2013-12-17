@@ -4,9 +4,20 @@ use strict;
 sub read3lines {
 	my ($fh) = @_;
 	my @l;
+	my $maxlen = 0;
 	for my $i (0..2) {
 		my $l1 = <$fh>;
+		chomp($l1);
+		my $len = length($l1);
+		$maxlen = $len if ($len > $maxlen);
 		push @l, $l1;
+	}
+	for my $i (0..2) {
+		my $len = length($l[$i]);
+		my $missing = $maxlen - $len;
+		if ($missing > 0) {
+			$l[$i] .= " " x $missing;
+		}
 	}
 	my $tmp = <$fh>;
 	return @l;
