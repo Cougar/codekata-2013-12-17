@@ -116,7 +116,26 @@ while (! eof) {
 	if ($num =~ /\?/) {
 		$ok = "UNKNOWN";
 	} else {
-		$ok = (! check_sum($num) ? "OK" : "ERROR");
+		my $err = check_sum($num);
+		if ($err) {
+			for my $pos (0 .. 8) {
+				for my $i (0 .. 9) {
+					my $newnum = $num;
+					substr($newnum, $pos, 1, $i);
+					next if (check_sum($newnum));
+					next unless (countdiffs($o[$pos], $tbl[$i]) == 1);
+					$orig = " (original: $num)";
+					$num = $newnum;
+					$err = 0;
+					last;
+				}
+			}
+		}
+		if ($err) {
+			$ok = "ERROR";
+		} else {
+			$ok = "OK";
+		}
 	}
 	print "$num: $ok$orig\n";
 }
