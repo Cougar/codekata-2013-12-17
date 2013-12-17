@@ -58,19 +58,22 @@ sub sslookup {
 	my ($ch) = @_;
 
 	for my $k (0 .. $#tbl) {
-		return $k if ($ch eq $tbl[$k]);
+		return ($k, $ch) if ($ch eq $tbl[$k]);
 	}
-	return "?";
+	return ("?", $ch);
 }
 
 sub getline {
 	my ($fh) = @_;
-	my $l = "";
+	my @l = ();
+	my @o = ();
 	my @ch = splitchars(read3lines($fh));
 	for my $c (@ch) {
-		$l .= sslookup($c);
+		my ($c, $orig) = sslookup($c);
+		push @l, $c;
+		push @o, $orig;
 	}
-	return $l;
+	return (num => \@l, orig => \@o);
 }
 
 sub check_sum {
@@ -84,13 +87,34 @@ sub check_sum {
 
 open my $fh, '<&STDIN';
 while (! eof) {
-	my $num = getline($fh);
+	my %h = getline($fh);
+	my @l = @{$h{'num'}};
+	my @o = @{$h{'orig'}};
+	my $num = join('', @l);
 	my $ok = "";
+	my $orig = "";
+	if ($num =~ /\?/) {
+		my $pos = index($num, "?");
+		for my $i (0 .. 9) {
+			(my $newnum = $num) =~ s/\?/$i/;
+			next if (check_sum($newnum));
+			my $ocr = $o[$pos];
+			$orig = " (original: $num)";
+			my $diffs = 0;
+			for(0 .. length($ocr)) {
+				$diffs ++ if (substr($ocr, $_, 1) ne substr($tbl[$i], $_, 1));
+			}
+			next unless ($diffs == 1);
+
+			$num = $newnum;
+			last;
+		}
+	}
 	if ($num =~ /\?/) {
 		$ok = "UNKNOWN";
 	} else {
 		$ok = (! check_sum($num) ? "OK" : "ERROR");
 	}
-	print "$num: $ok\n";
+	print "$num: $ok$orig\n";
 }
 
