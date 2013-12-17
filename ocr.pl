@@ -61,8 +61,19 @@ sub getline {
 	return $l;
 }
 
+sub check_sum {
+	my ($num) = @_;
+	my $sum = 0;
+	for my $k (1 .. 9) {
+		$sum += $k * substr($num, -1 * $k, 1);
+	}
+	return $sum % 11;
+}
+
 open my $fh, '<&STDIN';
 while (! eof) {
-	print getline($fh) . "\n";
+	my $num = getline($fh);
+	my $ok = check_sum($num);
+	print "$num: " . (! $ok ? "OK" : "ERROR") . "\n";
 }
 
