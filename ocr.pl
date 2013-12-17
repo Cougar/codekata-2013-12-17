@@ -85,6 +85,15 @@ sub check_sum {
 	return $sum % 11;
 }
 
+sub countdiffs {
+	my ($l1, $l2) = @_;
+	my $diffs = 0;
+	for(0 .. length($l1)) {
+		$diffs ++ if (substr($l1, $_, 1) ne substr($l2, $_, 1));
+	}
+	return $diffs;
+}
+
 open my $fh, '<&STDIN';
 while (! eof) {
 	my %h = getline($fh);
@@ -98,14 +107,8 @@ while (! eof) {
 		for my $i (0 .. 9) {
 			(my $newnum = $num) =~ s/\?/$i/;
 			next if (check_sum($newnum));
-			my $ocr = $o[$pos];
+			next unless (countdiffs($o[$pos], $tbl[$i]) == 1);
 			$orig = " (original: $num)";
-			my $diffs = 0;
-			for(0 .. length($ocr)) {
-				$diffs ++ if (substr($ocr, $_, 1) ne substr($tbl[$i], $_, 1));
-			}
-			next unless ($diffs == 1);
-
 			$num = $newnum;
 			last;
 		}
