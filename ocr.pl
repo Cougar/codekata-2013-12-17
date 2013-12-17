@@ -48,7 +48,7 @@ sub sslookup {
 	for my $k (0 .. $#tbl) {
 		return $k if ($ch eq $tbl[$k]);
 	}
-	die "UNKNOWN NUMBER: [$ch]";
+	return "?";
 }
 
 sub getline {
@@ -73,7 +73,12 @@ sub check_sum {
 open my $fh, '<&STDIN';
 while (! eof) {
 	my $num = getline($fh);
-	my $ok = check_sum($num);
-	print "$num: " . (! $ok ? "OK" : "ERROR") . "\n";
+	my $ok = "";
+	if ($num =~ /\?/) {
+		$ok = "UNKNOWN";
+	} else {
+		$ok = (! check_sum($num) ? "OK" : "ERROR");
+	}
+	print "$num: $ok\n";
 }
 
