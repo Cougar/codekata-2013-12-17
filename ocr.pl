@@ -107,7 +107,7 @@ while (! eof) {
 		for my $i (0 .. 9) {
 			(my $newnum = $num) =~ s/\?/$i/;
 			next if (check_sum($newnum));
-			next unless (countdiffs($o[$pos], $tbl[$i]) == 1);
+			last unless (countdiffs($o[$pos], $tbl[$i]) == 1);
 			$orig = " (original: $num)";
 			$num = $newnum;
 			last;
